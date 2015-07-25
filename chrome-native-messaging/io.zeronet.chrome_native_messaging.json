@@ -1,0 +1,10 @@
+{
+  "name": "io.zeronet.chrome_native_messaging",
+  "description": "Chrome Native Messaging API for starting and stopping a zeronet host",
+  "path": "HOST_PATH",
+  "type": "stdio",
+  "allowed_origins": [
+      "chrome-extension://ogbkdalhcdmdgnnplelpeakbpfccaejc/",
+      "chrome-extension://knldjmfmopnpolahpmmgbagdohdnhkik/"
+  ]
+}

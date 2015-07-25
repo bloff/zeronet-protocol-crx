@@ -43,7 +43,7 @@ function onBeforeRequest(details)
 	}
 
 
-	//console.log("on before request! ", details);	
+	//console.log("on before request! ", details);
 	//console.log("hostname " + currentURLRequest.hostname +", protocol " + currentURLRequest.protocol, "url " + currentURLRequest.href);
 	
 	// get data from local storage
@@ -163,3 +163,57 @@ function openZeroHomePage(inNewTab)
 	}
 
 }
+
+
+console.log("Connecting to zeronet native messaging script...");
+var port = chrome.runtime.connectNative('io.zeronet.chrome_native_messaging');
+var expectedDisconnect = false;
+var zeronetStarted = false;
+console.log(port);
+
+port.onMessage.addListener(function(msg) {
+    if (msg == "Bye!")
+        expectedDisconnect = true;
+    if (msg instanceof Array) {
+        var header = msg[0];
+        if (header == "start") {
+            if (msg[1] == "success") {
+                zeronetStarted = true;
+                console.log("Zeronet started successfully.")
+            }
+            else if (msg[1] == "redundant") {
+                console.log("Zeronet already started.")
+            }
+            else {
+                zeronetStarted = false;
+                console.log("Zeronet failed to start: " + msg[1])
+            }
+        }
+        else if (header == "ERROR") {
+            console.log("chrome-native-messaging client ERROR: " + msg[1])
+        }
+        else {
+            console.log("Received unknown message from chrome_native_messaging:");
+            console.log(msg);
+        }
+    }
+});
+
+port.onDisconnect.addListener(function() {
+    if (expectedDisconnect)
+        console.log("Disconnected.");
+    else
+        console.log("Connection error: " + chrome.runtime.lastError.message);
+});
+
+chrome.storage.local.get(function(item)
+{
+    //console.log(item);
+    zeronetPath = item.zeronetPath;
+    if (zeronetPath != null && zeronetPath != "") {
+        port.postMessage(["whereiszeronet", zeronetPath]);
+        port.postMessage(["start"]);
+    }
+});
+
+
